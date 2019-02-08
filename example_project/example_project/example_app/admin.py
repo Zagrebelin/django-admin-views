@@ -1,11 +1,11 @@
 from django.contrib import admin
-from admin_views.admin import AdminViews
+from admin_views.admin import AdminExtraLinksMixin
 from django.shortcuts import redirect
 
 from example_project.example_app.models import TestModel
 
-class TestAdmin(AdminViews):
-    admin_views = (
+class TestAdmin(AdminExtraLinksMixin):
+    admin_extra_links = (
             ('Process This', 'process'),              # Admin view
             ('Go to LJW', 'http://www.ljworld.com'),  # Direct URL
     )

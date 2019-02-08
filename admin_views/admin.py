@@ -7,23 +7,23 @@ from django.contrib.auth.decorators import permission_required
 ADMIN_URL_PREFIX = getattr(settings, 'ADMIN_VIEWS_URL_PREFIX', '/admin')
 
 
-class AdminViews(admin.ModelAdmin):
+class AdminExtraLinksMixin:
     """
     Standard admin subclass to handle easily adding views to
     the Django admin for an app
     """
+    admin_extra_links = []
 
     def __init__(self, *args, **kwargs):
-        super(AdminViews, self).__init__(*args, **kwargs)
-        self.direct_links = []
-        self.local_view_names = []
-        self.output_urls = []
+        self._output_extra_urls = []
+        super().__init__(*args, **kwargs)
 
     def get_urls(self):
-        original_urls = super(AdminViews, self).get_urls()
+        original_urls = super().get_urls()
         added_urls = []
+        self._output_extra_urls = []
 
-        for link in self.admin_views:
+        for link in self.admin_extra_links:
             if type(link[1]) is str and hasattr(self, link[1]):
                 view_func = getattr(self, link[1])
                 if len(link) == 3:
@@ -37,7 +37,6 @@ class AdminViews(admin.ModelAdmin):
                         )
                     ]
                 )
-                self.local_view_names.append(link[0])
 
                 try:
                     model_name = self.model._meta.model_name
@@ -46,7 +45,7 @@ class AdminViews(admin.ModelAdmin):
 
                 # Build URL from known info
                 info = self.model._meta.app_label, model_name
-                self.output_urls.append((
+                self._output_extra_urls.append((
                         'view',
                         link[0],
                         "%s/%s/%s/%s" % (ADMIN_URL_PREFIX, info[0], info[1], link[1]),
@@ -54,7 +53,12 @@ class AdminViews(admin.ModelAdmin):
                     )
                 )
             else:
-                self.direct_links.append(link)
-                self.output_urls.append(('url', link[0], link[1], link[2] if len(link) == 3 else None))
+                self._output_extra_urls.append(('url', link[0], link[1], link[2] if len(link) == 3 else None))
 
         return added_urls + original_urls
+
+    @property
+    def extra_urls(self):
+        if not self._output_extra_urls:
+            self.get_urls()
+        return self._output_extra_urls

@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import format_html_join
 
 from .. import conf
-from ..admin import AdminViews
+from ..admin import AdminExtraLinksMixin
 from ..compat import import_string
 
 site = import_string(conf.ADMIN_VIEWS_SITE)
@@ -33,8 +33,8 @@ def get_admin_views(app, perms):
         if app_name not in str(k._meta):
             continue
 
-        if isinstance(v, AdminViews):
-            for type, name, link, perm in v.output_urls:
+        if isinstance(v, AdminExtraLinksMixin):
+            for type, name, link, perm in v.extra_urls:
                 if perm and perm not in perms:
                     continue
                 if type == 'url':
