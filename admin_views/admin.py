@@ -24,7 +24,7 @@ class AdminViews(admin.ModelAdmin):
         added_urls = []
 
         for link in self.admin_views:
-            if hasattr(self, link[1]):
+            if type(link[1]) is str and hasattr(self, link[1]):
                 view_func = getattr(self, link[1])
                 if len(link) == 3:
                     # View requires permission
